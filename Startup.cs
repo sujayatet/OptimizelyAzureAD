@@ -60,7 +60,7 @@ public class Startup
                          await synchronizingUserService.SynchronizeAsync(claimsIdentity);
                      }
                  };
-             })
+            })
              .AddOpenIdConnect("azure", options =>
              {
                  options.SignInScheme = "azure-cookie";
