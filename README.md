@@ -2,7 +2,7 @@
 
 https://docs.developers.optimizely.com/content-management-system/docs/installing-optimizely-net-5
 
-**##Create dummy optimizely alloy** 
+**##Create dummy optimizely alloy project** 
 
 dotnet new epi-alloy-mvc
 
