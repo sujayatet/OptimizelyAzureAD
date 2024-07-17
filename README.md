@@ -1,41 +1,12 @@
-# Alloy MVC template
+##Optimizely help docs 
+https://docs.developers.optimizely.com/content-management-system/docs/installing-optimizely-net-5
 
-This template should not be seen as best practices, but as a great way to learn and test Optimizely CMS. 
+##Create dummy optimizely alloy 
+dotnet new epi-alloy-mvc
 
-## How to run
+###integration of optimizely with Azure AD with Openid
+https://docs.developers.optimizely.com/content-management-system/docs/integrate-azure-ad-using-openid-connect
+https://www.youtube.com/watch?v=cV7pdsYaKIM
 
-Chose one of the following options to get started. 
-
-### Windows
-
-Prerequisities
-- .NET SDK 6+
-- SQL Server 2016 Express LocalDB (or later)
-
-```bash
-$ dotnet run
-````
-
-### Any OS with Docker
-
-Prerequisities
-- Docker
-- Enable Docker support when applying the template
-
-```bash
-$ docker-compose up
-````
-
-> Note that this Docker setup is just configured for local development. Follow this [guide to enable HTTPS](https://github.com/dotnet/dotnet-docker/blob/main/samples/run-aspnetcore-https-development.md).
-
-### Any OS with external database server
-
-Prerequisities
-- .NET SDK 6+
-- SQL Server 2016 (or later) on a external server, e.g. Azure SQL
-
-Create an empty database on the external database server and update the connection string accordingly.
-
-```bash
-$ dotnet run
-````
+#Note:
+if we are using Roles assigned with Azure application with Azure Tenent, just make sure remove "emit_as_roles" from azure applucation menifest, which allow to get assigned roles while executing challange.
