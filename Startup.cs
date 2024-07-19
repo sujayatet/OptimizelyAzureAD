@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using EPiServer.Shell.Security;
+using Sustainsys.Saml2.Metadata;
+using Sustainsys.Saml2;
 
 namespace OptimizelyAzureAD;
 
@@ -37,7 +39,8 @@ public class Startup
         }
 
         var azureAdConfig = Configuration.GetSection("Azure:AD");
-        var azureAd2Config = Configuration.GetSection("Azure:AD2");
+        var azureAd2Config = Configuration.GetSection("Azure:AD3");
+        var azureAd3Config = Configuration.GetSection("Azure:AD4");
 
         services
              .AddAuthentication(options =>
@@ -222,6 +225,47 @@ public class Startup
                      return Task.CompletedTask;
                  };
              });
+        services
+            .AddAuthentication(options =>
+             {
+                 options.DefaultAuthenticateScheme = "azure-ad3-cookie";
+                 options.DefaultChallengeScheme = "Saml2Instance1";
+             })
+            .AddCookie("azure-ad3-cookie", options =>
+            {
+                
+                options.Events.OnSignedIn = async ctx =>
+                {
+                    if (ctx.Principal?.Identity is ClaimsIdentity claimsIdentity)
+                    {
+                        // Syncs user and roles so they are available to the CMS
+                        var synchronizingUserService = ctx
+                            .HttpContext
+                            .RequestServices
+                            .GetRequiredService<ISynchronizingUserService>();
+
+                        await synchronizingUserService.SynchronizeAsync(claimsIdentity);
+                    }
+                };
+            })
+            .AddSaml2("Saml2Instance1", options =>
+            {
+                options.SignInScheme = "azure-ad3-cookie";
+                options.SignOutScheme = "azure-ad3-cookie";
+                options.SPOptions.EntityId = new EntityId(azureAd3Config["EntityID"]);
+                options.SPOptions.ReturnUrl = new Uri(azureAd3Config["ReplyURL"]);
+
+                var idp = new IdentityProvider(
+                    new EntityId("https://sts.windows.net/" + azureAd3Config["TenantID"] + "/"),
+                    options.SPOptions)
+                {
+
+                    LoadMetadata = true,
+                    MetadataLocation = "https://login.microsoftonline.com/"+ azureAd3Config["TenantID"] + "/federationmetadata/2007-06/federationmetadata.xml?appid="+ azureAd3Config["appID"] + ""
+                };
+
+                options.IdentityProviders.Add(idp);
+            });
 
         services.AddCms();
         services.AddAlloy();

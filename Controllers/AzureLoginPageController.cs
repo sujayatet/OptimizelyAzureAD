@@ -27,6 +27,12 @@ namespace OptimizelyAzureAD.Controllers
                 string redirectUrl = Url.Action(nameof(LoginCallback), "AzureLoginPage", new {returnUrl});
                 return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl }, "azure-ad2");
             }
+            if (provider == "Saml2Instance1")
+            {
+                var redirectUrl = Url.Action(nameof(LoginCallback), "AzureLoginPage", new { returnUrl });
+                var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+                return Challenge(properties, "Saml2Instance1");
+            }
             return View();
         }
 

@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="EPiServer.CMS" Version="12.13.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.32" />
+    <PackageReference Include="Sustainsys.Saml2.AspNetCore2" Version="2.9.2" />
     <PackageReference Include="Wangkanai.Detection" Version="5.2.0" />
   </ItemGroup>
   
