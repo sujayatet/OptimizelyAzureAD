@@ -39,35 +39,35 @@ public class Startup
         }
 
         var azureAdConfig = Configuration.GetSection("Azure:AD");
-        var azureAd2Config = Configuration.GetSection("Azure:AD3");
+        var azureAd2Config = Configuration.GetSection("Azure:AD2");
         var azureAd3Config = Configuration.GetSection("Azure:AD4");
 
-        services
-             .AddAuthentication(options =>
-             {
-                 options.DefaultAuthenticateScheme = "azure-cookie";
-                 options.DefaultChallengeScheme = "azure";
-             })
-             .AddCookie("azure-cookie", options =>
-             {
-                 options.Events.OnSignedIn = async ctx =>
-                 {
-                     if (ctx.Principal?.Identity is ClaimsIdentity claimsIdentity)
-                     {
-                         // Syncs user and roles so they are available to the CMS
-                         var synchronizingUserService = ctx
-                               .HttpContext
-                               .RequestServices
-                               .GetRequiredService<ISynchronizingUserService>();
+        services.AddAuthentication(options =>
+          {
+              options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+              options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+          })
+          .AddCookie()
+          .AddSaml2("Saml2Instance1", options =>
+          {
+              options.SPOptions.EntityId = new EntityId(azureAd3Config["EntityID"]);
+              options.SPOptions.ReturnUrl = new Uri(azureAd3Config["ReplyURL"]);
 
-                         await synchronizingUserService.SynchronizeAsync(claimsIdentity);
-                     }
-                 };
-            })
-             .AddOpenIdConnect("azure", options =>
+              var idp = new IdentityProvider(
+                  new EntityId("https://sts.windows.net/" + azureAd3Config["TenantID"] + "/"),
+                  options.SPOptions)
+              {
+
+                  LoadMetadata = true,
+                  MetadataLocation = "https://login.microsoftonline.com/" + azureAd3Config["TenantID"] + "/federationmetadata/2007-06/federationmetadata.xml?appid=" + azureAd3Config["appID"] + ""
+              };
+
+              options.IdentityProviders.Add(idp);
+          })
+          .AddOpenIdConnect("azure", options =>
              {
-                 options.SignInScheme = "azure-cookie";
-                 options.SignOutScheme = "azure-cookie";
+                 // options.SignInScheme = "azure-cookie";
+                 //options.SignOutScheme = "azure-cookie";
                  options.ResponseType = OpenIdConnectResponseType.Code;
                  options.CallbackPath = "/signin-oidc1";
                  options.UsePkce = true;
@@ -132,34 +132,11 @@ public class Startup
                      }
                      return Task.CompletedTask;
                  };
-             });
-
-        services
-             .AddAuthentication(options =>
-             {
-                 options.DefaultAuthenticateScheme = "azure-ad2-cookie";
-                 options.DefaultChallengeScheme = "azure-ad2";
-             })
-             .AddCookie("azure-ad2-cookie", options =>
-             {
-                 options.Events.OnSignedIn = async ctx =>
-                 {
-                     if (ctx.Principal?.Identity is ClaimsIdentity claimsIdentity)
-                     {
-                         // Syncs user and roles so they are available to the CMS
-                         var synchronizingUserService = ctx
-                               .HttpContext
-                               .RequestServices
-                               .GetRequiredService<ISynchronizingUserService>();
-
-                         await synchronizingUserService.SynchronizeAsync(claimsIdentity);
-                     }
-                 };
              })
              .AddOpenIdConnect("azure-ad2", options =>
              {
-                 options.SignInScheme = "azure-ad2-cookie";
-                 options.SignOutScheme = "azure-ad2-cookie";
+                 //options.SignInScheme = "azure-ad2-cookie";
+                 //options.SignOutScheme = "azure-ad2-cookie";
                  options.ResponseType = OpenIdConnectResponseType.Code;
                  options.CallbackPath = "/signin-oidc";
                  options.UsePkce = true;
@@ -225,47 +202,7 @@ public class Startup
                      return Task.CompletedTask;
                  };
              });
-        services
-            .AddAuthentication(options =>
-             {
-                 options.DefaultAuthenticateScheme = "azure-ad3-cookie";
-                 options.DefaultChallengeScheme = "Saml2Instance1";
-             })
-            .AddCookie("azure-ad3-cookie", options =>
-            {
-                
-                options.Events.OnSignedIn = async ctx =>
-                {
-                    if (ctx.Principal?.Identity is ClaimsIdentity claimsIdentity)
-                    {
-                        // Syncs user and roles so they are available to the CMS
-                        var synchronizingUserService = ctx
-                            .HttpContext
-                            .RequestServices
-                            .GetRequiredService<ISynchronizingUserService>();
-
-                        await synchronizingUserService.SynchronizeAsync(claimsIdentity);
-                    }
-                };
-            })
-            .AddSaml2("Saml2Instance1", options =>
-            {
-                options.SignInScheme = "azure-ad3-cookie";
-                options.SignOutScheme = "azure-ad3-cookie";
-                options.SPOptions.EntityId = new EntityId(azureAd3Config["EntityID"]);
-                options.SPOptions.ReturnUrl = new Uri(azureAd3Config["ReplyURL"]);
-
-                var idp = new IdentityProvider(
-                    new EntityId("https://sts.windows.net/" + azureAd3Config["TenantID"] + "/"),
-                    options.SPOptions)
-                {
-
-                    LoadMetadata = true,
-                    MetadataLocation = "https://login.microsoftonline.com/"+ azureAd3Config["TenantID"] + "/federationmetadata/2007-06/federationmetadata.xml?appid="+ azureAd3Config["appID"] + ""
-                };
-
-                options.IdentityProviders.Add(idp);
-            });
+      
 
         services.AddCms();
         services.AddAlloy();
