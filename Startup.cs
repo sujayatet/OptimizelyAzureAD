@@ -42,8 +42,8 @@ public class Startup
 
         services.AddSingleton<IOptionsMonitor<CookieAuthenticationOptions>, CustomCookieOptionsMonitor>();
 
-        var azureAdConfig = Configuration.GetSection("Azure:AD-Student");
-        var azureAd2Config = Configuration.GetSection("Azure:AD-Staff");
+        var azureAdConfig = Configuration.GetSection("Azure:AD-Staff");
+        var azureAd2Config = Configuration.GetSection("Azure:AD-Student");
         var azureAd3Config = Configuration.GetSection("Azure:AD4");
 
         services.AddAuthentication(options =>
@@ -73,7 +73,7 @@ public class Startup
                  // options.SignInScheme = "azure-cookie";
                  //options.SignOutScheme = "azure-cookie";
                  options.ResponseType = OpenIdConnectResponseType.Code;
-                 options.CallbackPath = "/signin-oidc";
+                 options.CallbackPath = azureAdConfig["CallbackPath"];
                  options.UsePkce = true;
 
                  options.Authority = "https://login.microsoftonline.com/" + azureAdConfig["TenantID"] + "/v2.0";
@@ -142,7 +142,7 @@ public class Startup
                  //options.SignInScheme = "azure-ad2-cookie";
                  //options.SignOutScheme = "azure-ad2-cookie";
                  options.ResponseType = OpenIdConnectResponseType.Code;
-                 options.CallbackPath = "/signin-oidc";
+                 options.CallbackPath = azureAd2Config["CallbackPath"];
                  options.UsePkce = true;
 
                  options.Authority = "https://login.microsoftonline.com/" + azureAd2Config["TenantID"] + "/v2.0";
