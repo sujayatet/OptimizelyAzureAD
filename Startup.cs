@@ -15,6 +15,8 @@ using System.IdentityModel.Tokens.Jwt;
 using EPiServer.Shell.Security;
 using Sustainsys.Saml2.Metadata;
 using Sustainsys.Saml2;
+using Microsoft.Extensions.Options;
+using OptimizelyAzureAD.Authentication;
 
 namespace OptimizelyAzureAD;
 
@@ -38,8 +40,10 @@ public class Startup
             services.Configure<SchedulerOptions>(options => options.Enabled = false);
         }
 
-        var azureAdConfig = Configuration.GetSection("Azure:AD");
-        var azureAd2Config = Configuration.GetSection("Azure:AD2");
+        services.AddSingleton<IOptionsMonitor<CookieAuthenticationOptions>, CustomCookieOptionsMonitor>();
+
+        var azureAdConfig = Configuration.GetSection("Azure:AD-Student");
+        var azureAd2Config = Configuration.GetSection("Azure:AD-Staff");
         var azureAd3Config = Configuration.GetSection("Azure:AD4");
 
         services.AddAuthentication(options =>
@@ -69,7 +73,7 @@ public class Startup
                  // options.SignInScheme = "azure-cookie";
                  //options.SignOutScheme = "azure-cookie";
                  options.ResponseType = OpenIdConnectResponseType.Code;
-                 options.CallbackPath = "/signin-oidc1";
+                 options.CallbackPath = "/signin-oidc";
                  options.UsePkce = true;
 
                  options.Authority = "https://login.microsoftonline.com/" + azureAdConfig["TenantID"] + "/v2.0";
@@ -202,10 +206,16 @@ public class Startup
                      return Task.CompletedTask;
                  };
              });
-      
 
+        //services.AddCmsAspNetIdentity<ApplicationUser>();
         services.AddCms();
         services.AddAlloy();
+        services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromSeconds(10);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -218,7 +228,7 @@ public class Startup
 
         // Required by Wangkanai.Detection
         app.UseDetection();
-        //app.UseSession();
+        app.UseSession();
 
         app.UseStaticFiles();
         app.UseRouting();

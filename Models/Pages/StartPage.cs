@@ -60,4 +60,10 @@ public class StartPage : SitePageData
 
     [Display(GroupName = Globals.GroupNames.SiteSettings)]
     public virtual SiteLogotypeBlock SiteLogotype { get; set; }
+
+    [Display(GroupName = Globals.GroupNames.SiteSettings)]
+    public virtual ContentReference GlobalLoginPage { get; set; }
+
+    [Display(GroupName = Globals.GroupNames.SiteSettings)]
+    public virtual ContentReference AccessDeniedPage { get; set; }
 }
